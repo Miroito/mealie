@@ -60,7 +60,7 @@
 
     <div class="d-flex justify-space-between justify-start">
       <h2 class="mb-4 mt-1">{{ $t("recipe.instructions") }}</h2>
-      <BaseButton v-if="!public" minor :to="$router.currentRoute.path + '/cook'" cancel color="primary">
+      <BaseButton v-if="!public" minor cancel color="primary" @click="toggleCookMode()">
         <template #icon>
           {{ $globals.icons.primary }}
         </template>
@@ -198,6 +198,13 @@
                 <div v-show="!isChecked(index) && !edit" class="m-0 p-0">
                   <v-card-text class="markdown">
                     <VueMarkdown class="markdown" :source="step.text"> </VueMarkdown>
+                    <div v-if="cookMode">
+                      <div
+                        v-for="ing in step.ingredientReferences"
+                        :key="ing.referenceId"
+                        v-html="getIngredientByRefId(ing.referenceId)"
+                      />
+                    </div>
                   </v-card-text>
                 </div>
               </v-expand-transition>
@@ -263,6 +270,9 @@ export default defineComponent({
     assets: {
       type: Array as () => RecipeAsset[],
       required: true,
+    cookMode: {
+      type: Boolean,
+      default: false,
     },
   },
 
@@ -569,6 +579,8 @@ export default defineComponent({
       const assetUrl = BASE_URL + recipeAssetPath(props.recipeId, data.fileName as string);
       const text = `<img src="${assetUrl}" height="100%" width="100%"/>`;
       props.value[index].text += text;
+    function toggleCookMode() {
+      context.emit("cookModeToggle");
     }
 
     return {
@@ -598,6 +610,7 @@ export default defineComponent({
       updateIndex,
       autoSetReferences,
       parseIngredientText,
+      toggleCookMode,
     };
   },
 });
